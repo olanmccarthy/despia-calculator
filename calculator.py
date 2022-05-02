@@ -68,13 +68,33 @@ class Calculator:
         return score
 
     def checkHand(self, hand, deck):
+        if albion in hand:
+            # This is not strictly how albion works but its a trek to do properly
+            self.drawNewCard(albion, hand, deck)
+
         handCopy = copy.deepcopy(hand)
 
         # 1. Choose between using rite or normal summoning aluber
         if aluber in hand and fusion not in hand and opening not in hand and (girl in hand or rite in hand or foolish in hand):
             self.chooseBetweenAluberOrRite += 1
 
+        # 3a. How often do you draw brave engine/called by as well as a way to access fusion
+        if (opening in hand or fusion in hand) and (girl in hand or rite in hand or foolish in hand or called in hand):
+            self.bravePreventedFusionFromBeingAshed += 1 
+
+    def drawNewCard(self, card, hand, deck):
+        # Draw a new card from deck and remove current card
+        self.removeFromHand([card], hand)
+        hand.append(deck[0])
+        deck = deck[1:]
         
+    
+    def removeFromHand(self, cards, hand):
+        #removes the first instance of a card in cards from hand and nothing else
+        for card in cards:
+            if card in hand:
+                hand.remove(card)
+                return
 
     def run(self):
         # Combo Logic
@@ -99,4 +119,6 @@ class Calculator:
 
         print (f"Amount of times you are forced to choose between normal summoning Aluber or using Brave: {(self.chooseBetweenAluberOrRite / self.loopAmount) * 100}%")
 
-        print(f"Amount of times you are able to stop your Fusion from being Ash'd {answerToAsh * 100}%")
+        print(f"Assuming you have fusion, the amount of times you should be able to stop your Fusion from being Ash'd {answerToAsh * 100}%")
+
+        print(f"Amount of times you draw brave plus access to fusion {(self.bravePreventedFusionFromBeingAshed/self.loopAmount) * 100}%")
