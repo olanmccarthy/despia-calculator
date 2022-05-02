@@ -2,8 +2,9 @@ import requests
 import json
 import random
 import copy
+import scipy.stats as ss
 from card import Card
-from constants import adlib, albion, aluber, tragedy, chain, snow, albaz, kitt, merc, gryphon, girl, fusion, bir, lost, opening, called, dracoback, adventure, foolish, patchwork, poly, rite, allure
+from constants import adlib, albion, aluber, tragedy, chain, snow, albaz, kitt, merc, gryphon, girl, fusion, bir, lost, opening, called, dracoback, adventure, foolish, patchwork, poly, rite, allure, crossout
 
 class Calculator:
     def __init__(self, deckList, loopAmount):
@@ -85,8 +86,17 @@ class Calculator:
             # Check hands
             self.checkHand(hand, deckcopy)
 
+        # 2. How often does your branded fusion get ash blossomed going first
+        # 3. How often does the brave engine prevent you branded fusion getting ashed going first?
+        # 8. How often does crossout designator+ called by prevent your branded fusion getting ash blossomed in the pure variant?
+        # Assume for this you always have access to branded fusion, what chance do you have of drawing girl, rite, foolish, called by or crossout in hand
+        amountOfCounters = self.deck.count(girl) + self.deck.count(rite) + self.deck.count(foolish) + self.deck.count(called) + self.deck.count(crossout)
+        hpd = ss.hypergeom(len(self.deck), amountOfCounters, 5)
+        answerToAsh = hpd.pmf(1) + hpd.pmf(2) + hpd.pmf(3)
+
         # Print Stats
         print(f"Main deck total: {len(self.deck)}")
 
         print (f"Amount of times you are forced to choose between normal summoning Aluber or using Brave: {(self.chooseBetweenAluberOrRite / self.loopAmount) * 100}%")
 
+        print(f"Amount of times you are able to stop your Fusion from being Ash'd {answerToAsh * 100}%")
